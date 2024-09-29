@@ -1,0 +1,10 @@
+{
+    "skewt": {
+        "grid": true,
+        "title": "Skew-T of radio sounding",
+        "figsize": [8, 8],
+        "xlim": [-40, 40],
+        "ylim": [1050, 95]
+    },
+    "hodograph": {}
+}
