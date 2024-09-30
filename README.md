@@ -4,19 +4,18 @@ This project generates Skew-T plots (and later hodographs) from meteorological d
 
 # Further Steps
 ## Functionalities 
-    
-- create integral for CAPE (number and show)
-- create integral for CIN (number and show)
+
 - add CCL
 - add LFC
 - add LCL
 - add EL
 - add ConvT
 - add wind
-- add interactiveness
 - add ALL
 - add Flags for wind
 - add hodograph
+
+- Add Functionality Toggle
 
 ## Usability
 - add curser lines (MALR, DALR, Mixed, Isobar)

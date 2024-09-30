@@ -1,24 +1,28 @@
-# from src.skewt_plot import create_skewt_plot
-# from src.data_processing import extract_windy_temps
-# from src.data_processing import load_json_data
 from src import *
 import sys
+from time import perf_counter
 
 def main():
 
-    config = load_json_data()
-    skewt_config = config['skewt']
+    start_time = perf_counter()
 
-    windy_sounding_file = "data\\windy_sounding3.json"
+    config = load_json_data()
+    config['sounding_file'] = "data\\windy_sounding3.json"
+    config['skewt']['title'] = "Sounding Data for windy_sounding3.json "
 
     try:
-        windy_sounding = load_json_data(windy_sounding_file)
+        windy_sounding = load_json_data(config['sounding_file'])
         pres, temp, dew = extract_windy_temps(windy_sounding)
-        create_skewt_plot(pres, temp, dew, skewt_config)
-    except FileNotFoundError as e:
-        print(e)  # Print or log the error message
-        sys.exit(1)  # Exit with a non-zero status code to indicate an error
-    except ValueError as e:
+
+        plot = create_skewt_plot(pres, temp, dew, config['skewt'])
+        print(f"Execution time: {perf_counter() - start_time:.4f} seconds")
+
+        plot.show()
+
+    except FileNotFoundError as e: # if config- or data file are missing
+        print(e) 
+        sys.exit(1) 
+    except ValueError as e: # if there exist less than 5 data points
         print(e)
         sys.exit(1)
 
