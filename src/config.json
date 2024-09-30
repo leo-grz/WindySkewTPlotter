@@ -1,13 +1,20 @@
 {
     "sounding_file": "data\\windy_sounding1.json",
+    "title": "Test title for overall plot",
     "skewt": {
-        "grid": true,
         "title": "skew-t of radio sounding",
+        "grid": true,
+        "legend": true,
         "figsize": [8, 8],
         "xlim": [-40, 40],
         "ylim": [1050, 95],
         "functionalities": {
-            "cape_cin": false
+            "description": true,
+            "show_cape_cin": true,
+            "show_params": true,
+            "show_equiv_pot_temp": true,
+            "show_wb_temp": true,
+            "show_wb_pot_temp": true
         }
     },
     "hodograph": {}

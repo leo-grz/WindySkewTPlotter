@@ -35,8 +35,12 @@ def extract_windy_temps(data):
 
         if d and t and (1000 > int(p) > 100):
             pres.append(float(p))
-            dew.append(float(d))
             temp.append(float(t))
+            dew.append(float(d))
+    
+    if (len(temp) < 5) or not (len(pres) == len(temp) == len(dew)): # raise Value error if temperature data contains less than 5 data points
+        raise ValueError('Too few data points. Terminating program.')
+    
 
     return pres, temp, dew
 

@@ -5,16 +5,13 @@ This project generates Skew-T plots (and later hodographs) from meteorological d
 # Further Steps
 ## Functionalities 
 
-- add CCL
-- add LFC
-- add LCL
-- add EL
 - add ConvT
+- add MaxT
+- add FRZ/FZL
+- add Twb
 - add wind
-- add ALL
 - add Flags for wind
 - add hodograph
-
 - Add Functionality Toggle
 
 ## Usability
@@ -27,3 +24,4 @@ This project generates Skew-T plots (and later hodographs) from meteorological d
 
 - as windy.com plugin possible?
 - create UI of some sort
+
