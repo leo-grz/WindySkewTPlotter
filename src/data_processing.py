@@ -1,5 +1,6 @@
 import json
 from metpy.units import units
+import numpy as np
 
 # without argument loads in config parameters
 def load_json_data(filepath='src\\config.json'):
@@ -33,8 +34,10 @@ def extract_data(data, fields, min_points=5):
     Raises:
     ValueError : If data points are less than `min_points` or mismatched lengths.
     """
-    
+    # create empty list for every variable to extract
     extracted_data = [[] for _ in fields]
+
+    # amount of data points in the json file
     data_len = len(data['features'])
 
     for x in range(data_len):
@@ -44,6 +47,7 @@ def extract_data(data, fields, min_points=5):
         for field in fields:
             value = properties.get(field)
             current_values.append(value)
+
 
         # Check if all values are present
         if all(current_values):
@@ -61,5 +65,29 @@ def extract_data(data, fields, min_points=5):
     if any(len(data_list) < min_points for data_list in extracted_data) or \
        not all(len(data_list) == len(extracted_data[0]) for data_list in extracted_data):
         raise ValueError('Too few data points or mismatched lengths. Terminating program.')
+    
+    extracted_data_with_units = add_units(extracted_data, fields)
 
-    return extracted_data
+    return extracted_data_with_units
+
+def add_units(extracted_data, fields):
+
+    """
+    """
+
+    default_units = {
+        'pressure': units.hPa,
+        'temp': units.degK,
+        'dewpoint': units.degK,
+        'gpheight': units.m,
+        'wind_u': units.knots,
+        'wind_v': units.knots
+    }
+
+    extracted_data_with_units = []
+
+    for i, name in enumerate(fields):
+        if name in default_units.keys() and type(extracted_data[i]) == list:
+            extracted_data_with_units.append(np.array(extracted_data[i]) * default_units[name])
+    
+    return extracted_data_with_units

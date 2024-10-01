@@ -5,28 +5,20 @@ from metpy.plots import Hodograph
 from metpy.units import units
 import metpy.calc as mpcalc
 import matplotlib.pyplot as plt
-import numpy as np
 
 
-def create_skewt_plot(pres, temp, dew, skewt_config, wind_u, wind_v, fig=None, ax=None):
+def create_skewt_plot(pres, temp, dew, config, wind_u, wind_v, fig=None, ax=None):
 
     '''Takes pressure, temperature, dewpoint and the configuration contents 
     for the skew-t plot and returns a plt-object'''
 
-    pres = np.array(pres) * units.hPa
-    temp = np.array(temp) * units.degK
-    dew = np.array(dew) * units.degK
-    wind_u = np.array(wind_u) * units.knots
-    wind_v = np.array(wind_v) * units.knots
-
-     # add flags, cape, cin all manually
+    skewt_config = config['skewt']
 
     if not fig or not ax:
         fig = plt.figure(figsize=tuple(skewt_config['figsize']))
         skew = SkewT(fig, rotation=45)
     else:
         skew = SkewT(fig, rotation=45, subplot=ax)
-        #skew.ax = ax
 
     skew.plot(pres, temp, 'red', label='Temperature')
     skew.plot(pres, dew, 'blue', label='Dewpoint')
@@ -85,11 +77,16 @@ def create_skewt_plot(pres, temp, dew, skewt_config, wind_u, wind_v, fig=None, a
     skew.ax.set_title(skewt_config['title'])
     if skewt_config['legend']: skew.ax.legend()
 
-def create_hodograph_plot(gpheight, wind_u, wind_v, hodograph_config, ax=None):
 
-    gpheight = np.array(gpheight) * units.m
-    wind_u = np.array(wind_u) * units.knots
-    wind_v = np.array(wind_v) * units.knots
+
+
+def create_hodograph_plot(gpheight, wind_u, wind_v, config, ax=None):
+
+    """
+    
+    """
+
+    hodograph_config = config['hodograph']
     
     if not ax:
         fig = plt.figure(figsize=tuple(hodograph_config['figsize']))
@@ -97,8 +94,6 @@ def create_hodograph_plot(gpheight, wind_u, wind_v, hodograph_config, ax=None):
 
     hodo = Hodograph(ax, component_range=hodograph_config['component_range'])
     hodo.plot_colormapped(wind_u, wind_v, gpheight)
-    hodo
     hodo.add_grid(increment=hodograph_config['grid_increment'])
 
-def display_description():
-    pass
+

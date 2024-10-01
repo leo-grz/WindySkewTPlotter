@@ -9,9 +9,7 @@ def main():
     start_time = perf_counter()
 
     config = load_json_data()
-    config['sounding_file'] = "data\\windy_sounding1.json"
-    config['skewt']['title'] = "Sounding Data for windy_sounding3.json: SkewT"
-    config['hodograph']['title'] = "Sounding Data for windy_sounding3.json: Hodograph"
+    config['sounding_file'] = "data\\windy_sounding3.json"
 
     try:
 
@@ -26,13 +24,13 @@ def main():
         pres, temp, dew, gpheight, wind_u, wind_v = extract_data(windy_sounding, 
                     ['pressure', 'temp', 'dewpoint', 'gpheight', 'wind_u', 'wind_v'])
 
-        create_skewt_plot(pres, temp, dew, config['skewt'], wind_u, wind_v, fig, ax1)
-        create_hodograph_plot(gpheight, wind_u, wind_v, config['hodograph'], ax2)
+        create_skewt_plot(pres, temp, dew, config, wind_u, wind_v, fig, ax1)
+        create_hodograph_plot(gpheight, wind_u, wind_v, config, ax2)
 
         print(f"Execution time: {perf_counter() - start_time:.4f} seconds")
 
-        plt.title(config['title'])
-        plt.tight_layout()
+        plt.title(config['sounding_file'])
+        #plt.tight_layout()
         plt.show()
 
     except FileNotFoundError as e: # if config- or data file are missing
