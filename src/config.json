@@ -5,7 +5,7 @@
         "title": "skew-t of radio sounding",
         "grid": true,
         "legend": true,
-        "figsize": [8, 8],
+        "figsize": [9,9],
         "xlim": [-40, 40],
         "ylim": [1050, 95],
         "functionalities": {
@@ -17,5 +17,11 @@
             "show_wb_pot_temp": true
         }
     },
-    "hodograph": {}
+    "hodograph": {
+        "title": "hodograph of radio sounding",
+        "grid": true,
+        "legend": true,
+        "figsize": [9,9],
+        "component_range": 40
+    }
 }

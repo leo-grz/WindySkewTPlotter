@@ -72,15 +72,8 @@ def create_skewt_plot(pres, temp, dew, skewt_config):
         for i, label in enumerate(labels):        
             skew.ax.text(x[i] + 1 * units.degK, y[i], label, c='purple',fontsize=8, zorder=5)
 
-
-
-
-
     skew.ax.set_xlim(skewt_config['xlim'])
     skew.ax.set_ylim(skewt_config['ylim'])
     skew.ax.grid(skewt_config['grid'])
     skew.ax.set_title(skewt_config['title'])
     if skewt_config['legend']: skew.ax.legend()
-
-    return plt
-
