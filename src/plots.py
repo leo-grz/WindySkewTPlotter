@@ -1,13 +1,14 @@
 from .plot_helpers import *
 
 from metpy.plots import SkewT
+from metpy.plots import Hodograph
 from metpy.units import units
 import metpy.calc as mpcalc
 import matplotlib.pyplot as plt
 import numpy as np
 
 
-def create_skewt_plot(pres, temp, dew, skewt_config):
+def create_skewt_plot(pres, temp, dew, skewt_config, wind_u, wind_v, fig=None, ax=None):
 
     '''Takes pressure, temperature, dewpoint and the configuration contents 
     for the skew-t plot and returns a plt-object'''
@@ -15,9 +16,17 @@ def create_skewt_plot(pres, temp, dew, skewt_config):
     pres = np.array(pres) * units.hPa
     temp = np.array(temp) * units.degK
     dew = np.array(dew) * units.degK
+    wind_u = np.array(wind_u) * units.knots
+    wind_v = np.array(wind_v) * units.knots
 
-    fig = plt.figure(figsize=tuple(skewt_config['figsize']))
-    skew = SkewT(fig, rotation=45)
+     # add flags, cape, cin all manually
+
+    if not fig or not ax:
+        fig = plt.figure(figsize=tuple(skewt_config['figsize']))
+        skew = SkewT(fig, rotation=45)
+    else:
+        skew = SkewT(fig, rotation=45, subplot=ax)
+        #skew.ax = ax
 
     skew.plot(pres, temp, 'red', label='Temperature')
     skew.plot(pres, dew, 'blue', label='Dewpoint')
@@ -27,6 +36,8 @@ def create_skewt_plot(pres, temp, dew, skewt_config):
     skew.plot_dry_adiabats(lw=1, linestyle='solid', colors='darkgreen', alpha=0.4)
     skew.plot_moist_adiabats(lw=1, linestyle='dashed', colors='darkgreen', alpha=0.4)
     skew.plot_mixing_lines(lw=1, linestyle='dashed', colors='darkblue', alpha=0.4)
+
+    skew.plot_barbs(pres, wind_u, wind_v)
 
     # Calculating parameters
     params = calc_params(pres, temp, dew, parcel_prof)
@@ -52,12 +63,8 @@ def create_skewt_plot(pres, temp, dew, skewt_config):
 
     # adding CAPE and CIN area to plot
     if skewt_config['functionalities']['show_cape_cin']:
-        skew.ax.fill_betweenx(pres, temp, parcel_prof, 
-                    where=parcel_prof > temp, 
-                    facecolor='orange', alpha=0.5, label='CAPE')
-        skew.ax.fill_betweenx(pres, temp, parcel_prof, 
-                    where=parcel_prof < temp,
-                    facecolor='blue', alpha=0.5, label='CIN')
+        skew.shade_cape(pres, temp, parcel_prof)
+        skew.shade_cin(pres, temp, parcel_prof)
 
     # show parameters as points in plot
     if skewt_config['functionalities']['show_params']:
@@ -77,3 +84,21 @@ def create_skewt_plot(pres, temp, dew, skewt_config):
     skew.ax.grid(skewt_config['grid'])
     skew.ax.set_title(skewt_config['title'])
     if skewt_config['legend']: skew.ax.legend()
+
+def create_hodograph_plot(gpheight, wind_u, wind_v, hodograph_config, ax=None):
+
+    gpheight = np.array(gpheight) * units.m
+    wind_u = np.array(wind_u) * units.knots
+    wind_v = np.array(wind_v) * units.knots
+    
+    if not ax:
+        fig = plt.figure(figsize=tuple(hodograph_config['figsize']))
+        ax = fig.add_subplot()
+
+    hodo = Hodograph(ax, component_range=hodograph_config['component_range'])
+    hodo.plot_colormapped(wind_u, wind_v, gpheight)
+    hodo
+    hodo.add_grid(increment=hodograph_config['grid_increment'])
+
+def display_description():
+    pass

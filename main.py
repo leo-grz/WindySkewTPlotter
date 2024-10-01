@@ -2,6 +2,7 @@ from src import *
 import sys
 from time import perf_counter
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
 def main():
 
@@ -13,16 +14,24 @@ def main():
     config['hodograph']['title'] = "Sounding Data for windy_sounding3.json: Hodograph"
 
     try:
+
+        fig = plt.figure(figsize=tuple(config['figsize']))
+        gs = gridspec.GridSpec(10, 15)
+        
+        ax1 = fig.add_subplot(gs[:, 0:10]) # skewt ax
+        ax2 = fig.add_subplot(gs[0:5, 10:15]) # hodograph ax
+
         windy_sounding = load_json_data(config['sounding_file'])
 
-        pres, temp, dew = extract_windy_data(windy_sounding, ['pressure', 'temp', 'dewpoint'])
-        create_skewt_plot(pres, temp, dew, config['skewt'])
+        pres, temp, dew, gpheight, wind_u, wind_v = extract_data(windy_sounding, 
+                    ['pressure', 'temp', 'dewpoint', 'gpheight', 'wind_u', 'wind_v'])
 
-        gpheight, wind_u, wind_v = extract_windy_data(windy_sounding, ['gpheight', 'wind_u', 'wind_v'])
-        create_hodograph_plot(gpheight, wind_u, wind_v, config['hodograph'])
+        create_skewt_plot(pres, temp, dew, config['skewt'], wind_u, wind_v, fig, ax1)
+        create_hodograph_plot(gpheight, wind_u, wind_v, config['hodograph'], ax2)
 
         print(f"Execution time: {perf_counter() - start_time:.4f} seconds")
 
+        plt.title(config['title'])
         plt.tight_layout()
         plt.show()
 
@@ -35,4 +44,3 @@ def main():
    
 if __name__ == "__main__":
     main()
-

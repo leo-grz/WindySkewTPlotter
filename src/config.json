@@ -1,11 +1,11 @@
 {
     "sounding_file": "data\\windy_sounding1.json",
-    "title": "Test title for overall plot",
+    "title": "windy_sounding1.json",
+    "figsize": [15, 10],
     "skewt": {
         "title": "skew-t of radio sounding",
         "grid": true,
         "legend": true,
-        "figsize": [9,9],
         "xlim": [-40, 40],
         "ylim": [1050, 95],
         "functionalities": {
@@ -18,10 +18,7 @@
         }
     },
     "hodograph": {
-        "title": "hodograph of radio sounding",
-        "grid": true,
-        "legend": true,
-        "figsize": [9,9],
-        "component_range": 40
+        "component_range": 40,
+        "grid_increment": 10
     }
 }

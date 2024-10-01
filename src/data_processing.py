@@ -1,4 +1,5 @@
 import json
+from metpy.units import units
 
 # without argument loads in config parameters
 def load_json_data(filepath='src\\config.json'):
@@ -15,13 +16,8 @@ def load_json_data(filepath='src\\config.json'):
             raise FileNotFoundError(f"The default configuration file ('src\\config.json') couldn't be found. Terminating program.") from e
         else:
             raise FileNotFoundError(f"File '{filepath}' not found. Terminating program.") from e
-
-
-    
-
-    return pres, temp, dew
-
-def extract_windy_data(data, fields, min_points=5):
+        
+def extract_data(data, fields, min_points=5):
     """
     Generic function to extract data from a windy.com JSON sounding.
     
