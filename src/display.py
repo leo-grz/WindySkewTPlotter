@@ -2,8 +2,6 @@ from metpy.plots import SkewT
 from metpy.plots import Hodograph
 from metpy.units import units
 import matplotlib.pyplot as plt
-from .data_processing import *
-from .helpers import *
 
 
 def create_skewt_plot(pres, temp, dew, wind_u, wind_v, config, params, fig=None, ax=None):
@@ -29,12 +27,6 @@ def create_skewt_plot(pres, temp, dew, wind_u, wind_v, config, params, fig=None,
     skew.plot_mixing_lines(lw=1, linestyle='dashed', colors='darkblue', alpha=0.4)
 
     skew.plot_barbs(pres, wind_u, wind_v)
-
-    # adding list of parameters to the side of plot
-    if skewt_config['functionalities']['description']:
-        description = create_description(params)
-        skew.ax.text(1.02, 0.5, description, transform=skew.ax.transAxes, 
-                     fontsize=10, color='black', va='top', ha='left')
         
     # adding temperatures
     if skewt_config['functionalities']['show_equiv_pot_temp']:
@@ -92,4 +84,36 @@ def create_hodograph_plot(gpheight, wind_u, wind_v, config, ax=None):
     hodo.plot_colormapped(wind_u, wind_v, gpheight)
     hodo.add_grid(increment=hodograph_config['grid_increment'])
 
+def display_parameters(params, fig):
+    description = create_description(params)
+
+    fig.text(0.65, 0.45, description, fontsize=10, ha='left', va='top')
+
+
+def create_description(params):
+
+    def hl(headline):
+        return f"\n[ {headline} ]\n"
+
+    description = hl('POINTS')
+
+    for key, val in params['points'].items():
+        description += f"{key}: {round(val[1].to('degC'), 1).m}°C | {round(val[0].m, 1)} hPa\n"
+
+    description += hl('CAPE & CIN')
+
+    for key, val in params['cape_cin'].items():
+        description += f"{key}: {round(val.m, 1)} j/kg\n"
+
+    description += hl('TEMPERATURES AT GROUND')
+
+    for key, val in params['temperatures'].items():
+        description += f"{key}: {round(val[0].m, 1)} °K\n"
+    
+    description += hl('INDICES')
+
+    for key, val in params['indices'].items():
+        description += f"{key}: {round(float(val.m), 1)}\n"
+
+    return description
 

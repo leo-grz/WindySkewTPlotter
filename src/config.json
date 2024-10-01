@@ -9,7 +9,6 @@
         "xlim": [-40, 40],
         "ylim": [1050, 95],
         "functionalities": {
-            "description": true,
             "show_cape_cin": true,
             "show_params": true,
             "show_equiv_pot_temp": true,

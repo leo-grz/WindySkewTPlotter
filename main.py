@@ -28,6 +28,8 @@ def main():
 
         create_skewt_plot(pres, temp, dew, wind_u, wind_v, config, params, fig, ax1)
         create_hodograph_plot(gpheight, wind_u, wind_v, config, ax2)
+        display_parameters(params, fig)
+
 
         print(f"Execution time: {perf_counter() - start_time:.4f} seconds")
 

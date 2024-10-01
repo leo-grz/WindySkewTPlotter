@@ -1,7 +1,6 @@
 import json
 from metpy.units import units
 import metpy.calc as mpcalc
-
 import numpy as np
 
 # without argument loads in config parameters
