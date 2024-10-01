@@ -1,5 +1,7 @@
 import json
 from metpy.units import units
+import metpy.calc as mpcalc
+
 import numpy as np
 
 # without argument loads in config parameters
@@ -91,3 +93,66 @@ def add_units(extracted_data, fields):
             extracted_data_with_units.append(np.array(extracted_data[i]) * default_units[name])
     
     return extracted_data_with_units
+
+
+def calc_params(pres, temp, dew):
+
+    '''Needs pressure, temperature, dewpoint and parcel trace to return a dictionary
+    which contains LCL, LFC, EL, CCL, CAPE, CIN'''
+
+    parcel_profile = mpcalc.parcel_profile(pres, temp[0], dew[0])
+
+    # points
+    lcl = mpcalc.lcl(pres[0], temp[0], dew[0])
+    lfc = mpcalc.lfc(pres, temp, dew)
+    el = mpcalc.el(pres, temp, dew)
+    ccl = mpcalc.ccl(pres, temp, dew)[:2]  # Extract only pressure and temperature
+    
+    # temperatures
+    equiv_pot_temp = mpcalc.equivalent_potential_temperature(pres, temp, dew)
+    wet_bulb_temp = mpcalc.wet_bulb_temperature(pres, temp, dew)
+    wet_bulb_pot_temp = mpcalc.wet_bulb_potential_temperature(pres, temp, dew)
+
+    # cape, cin
+    cape, cin = mpcalc.cape_cin(pres, temp, dew, parcel_profile)
+
+    # indices
+    lifted_index = mpcalc.lifted_index(pres, temp, parcel_profile)
+    k_index = mpcalc.k_index(pres, temp, dew)
+    total_totals_index = mpcalc.total_totals_index(pres, temp, dew)
+    showalter_index = mpcalc.showalter_index(pres, temp, dew)
+
+    params = {
+        # points on graph, x-value: °K, y-value: hPa, layout: (hPa, K)
+        "points": {
+            "LCL": lcl,
+            "LFC": lfc,
+            "EL": el,
+            "CCL": ccl,
+        },
+        # cape and cin in j/kg
+        "cape_cin": {
+            "CAPE": cape,
+            "CIN": cin
+        },
+        # temperatures
+        "temperatures": {
+            "\u03B8e": equiv_pot_temp,
+            "Tw": wet_bulb_temp,
+            "\u03B8w": wet_bulb_pot_temp
+        },
+        # indices generally don't have units!
+        "indices": {
+            "Lifted Index": lifted_index,
+            "K Index": k_index,
+            "Total Totals Index": total_totals_index,
+            "Showalter Stability Index": showalter_index
+        },
+        "other": {
+            "Parcel Profile": parcel_profile
+        }
+    }
+
+    return params
+
+

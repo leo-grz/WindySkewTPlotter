@@ -1,18 +1,18 @@
-from .plot_helpers import *
-
 from metpy.plots import SkewT
 from metpy.plots import Hodograph
 from metpy.units import units
-import metpy.calc as mpcalc
 import matplotlib.pyplot as plt
+from .data_processing import *
+from .helpers import *
 
 
-def create_skewt_plot(pres, temp, dew, config, wind_u, wind_v, fig=None, ax=None):
+def create_skewt_plot(pres, temp, dew, wind_u, wind_v, config, params, fig=None, ax=None):
 
     '''Takes pressure, temperature, dewpoint and the configuration contents 
     for the skew-t plot and returns a plt-object'''
 
     skewt_config = config['skewt']
+    parcel_profile = params['other']['Parcel Profile'].to('degC')
 
     if not fig or not ax:
         fig = plt.figure(figsize=tuple(skewt_config['figsize']))
@@ -22,8 +22,7 @@ def create_skewt_plot(pres, temp, dew, config, wind_u, wind_v, fig=None, ax=None
 
     skew.plot(pres, temp, 'red', label='Temperature')
     skew.plot(pres, dew, 'blue', label='Dewpoint')
-    parcel_prof = mpcalc.parcel_profile(pres, temp[0], dew[0]).to('degC')
-    skew.plot(pres, parcel_prof, 'k', linestyle='--', label='Parcel Trace')
+    skew.plot(pres, parcel_profile, 'k', linestyle='--', label='Parcel Trace')
 
     skew.plot_dry_adiabats(lw=1, linestyle='solid', colors='darkgreen', alpha=0.4)
     skew.plot_moist_adiabats(lw=1, linestyle='dashed', colors='darkgreen', alpha=0.4)
@@ -31,13 +30,10 @@ def create_skewt_plot(pres, temp, dew, config, wind_u, wind_v, fig=None, ax=None
 
     skew.plot_barbs(pres, wind_u, wind_v)
 
-    # Calculating parameters
-    params = calc_params(pres, temp, dew, parcel_prof)
-
     # adding list of parameters to the side of plot
     if skewt_config['functionalities']['description']:
         description = create_description(params)
-        skew.ax.text(1.02, 0.9, description, transform=skew.ax.transAxes, 
+        skew.ax.text(1.02, 0.5, description, transform=skew.ax.transAxes, 
                      fontsize=10, color='black', va='top', ha='left')
         
     # adding temperatures
@@ -55,8 +51,8 @@ def create_skewt_plot(pres, temp, dew, config, wind_u, wind_v, fig=None, ax=None
 
     # adding CAPE and CIN area to plot
     if skewt_config['functionalities']['show_cape_cin']:
-        skew.shade_cape(pres, temp, parcel_prof)
-        skew.shade_cin(pres, temp, parcel_prof)
+        skew.shade_cape(pres, temp, parcel_profile)
+        skew.shade_cin(pres, temp, parcel_profile)
 
     # show parameters as points in plot
     if skewt_config['functionalities']['show_params']:
