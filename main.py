@@ -11,37 +11,39 @@ def main():
     config = load_json_data()
     config['sounding_file'] = "data\\windy_sounding3.json"
 
-    try:
+    #try:
 
-        fig = plt.figure(figsize=tuple(config['figsize']))
-        gs = gridspec.GridSpec(10, 15)
-        
-        ax1 = fig.add_subplot(gs[:, 0:10]) # skewt ax
-        ax2 = fig.add_subplot(gs[0:5, 10:15]) # hodograph ax
+    fig = plt.figure(figsize=tuple(config['figsize']))
+    gs = gridspec.GridSpec(10, 15)
+    
+    ax1 = fig.add_subplot(gs[:, 0:10]) # skewt ax
+    ax2 = fig.add_subplot(gs[0:5, 10:15]) # hodograph ax
 
-        windy_sounding = load_json_data(config['sounding_file'])
+    windy_sounding = load_json_data(config['sounding_file'])
 
-        pres, temp, dew, gpheight, wind_u, wind_v = extract_data(windy_sounding, 
-                    ['pressure', 'temp', 'dewpoint', 'gpheight', 'wind_u', 'wind_v'])
-        
-        params = calc_params(pres, temp, dew)
+    pres, temp, dew, gpheight, wind_u, wind_v = extract_data(windy_sounding, 
+                ['pressure', 'temp', 'dewpoint', 'gpheight', 'wind_u', 'wind_v'])
+    
+    params = calc_params(pres, temp, dew)
 
-        create_skewt_plot(pres, temp, dew, wind_u, wind_v, config, params, fig, ax1)
-        create_hodograph_plot(gpheight, wind_u, wind_v, config, ax2)
-        display_parameters(params, fig)
+    create_skewt_plot(pres, temp, dew, wind_u, wind_v, config, params, fig, ax1)
+    create_hodograph_plot(gpheight, wind_u, wind_v, config, ax2)
 
+    params.popitem() # to omit the 'others' category in params, since parcel trace shouldn't be displayed
+    display_parameters(config, params, fig)
 
-        print(f"Execution time: {perf_counter() - start_time:.4f} seconds")
+    
+    print(f"Execution time: {perf_counter() - start_time:.4f} seconds")
 
-        plt.title(config['sounding_file'])
-        plt.show()
+    plt.title(config['sounding_file'])
+    plt.show()
 
-    except FileNotFoundError as e: # if config- or data file are missing
-        print(e) 
-        sys.exit(1) 
-    except ValueError as e: # if there exist less than 5 data points
-        print(e)
-        sys.exit(1)
+    # except FileNotFoundError as e: # if config- or data file are missing
+    #     print(e.with_traceback) 
+    #     sys.exit(1) 
+    # except ValueError as e: # if there exist less than 5 data points
+    #     print(e.with_traceback)
+    #     sys.exit(1)
    
 if __name__ == "__main__":
     main()

@@ -19,5 +19,39 @@
     "hodograph": {
         "component_range": 40,
         "grid_increment": 10
+    },
+    "param_display": {
+        "general": {
+            "abs_position": [0.65, 0.40],
+            "headline_elevation": 0.01,
+            "indent": 0.01,
+            "line_spacing": 0.02,
+            "key_val_spacing": 0.04
+        },
+        "categories": {
+            "points": {
+                "headline": "POINTS",
+                "rel_position": [0, 0],
+                "unit": ["\u00B0C", " hPa"]
+            },
+            "cape_cin": {
+                "headline": "CAPE & CIN",
+                "rel_position": [0, -0.12],
+                "unit": " j/kg"
+            },
+            "temperatures": {
+                "headline": "TEMPERATURES",
+                "rel_position": [0, -0.2],
+                "unit": "\u00B0K"
+            },
+            "indices": {
+                "headline": "INDICES",
+                "rel_position": [0.16, 0],
+                "unit": "",
+                "key_val_spacing": 0.08
+            }
+        }
+        
     }
+
 }

@@ -16,7 +16,6 @@
 - add Location of sounding on worldmap
 - verify data is in possible range
     - report outliers
-- apply units to data upon retreival
 - Format README and TODO
-- add hodograph functionalities
-    - 
+- format Parameter Descriptions
+- Add forecast guidance for parameters, which ranges mean what?

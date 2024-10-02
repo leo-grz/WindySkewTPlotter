@@ -145,7 +145,7 @@ def calc_params(pres, temp, dew):
             "Lifted Index": lifted_index,
             "K Index": k_index,
             "Total Totals Index": total_totals_index,
-            "Showalter Stability Index": showalter_index
+            "Showalter Index": showalter_index
         },
         "other": {
             "Parcel Profile": parcel_profile

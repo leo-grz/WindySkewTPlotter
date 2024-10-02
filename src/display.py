@@ -84,36 +84,56 @@ def create_hodograph_plot(gpheight, wind_u, wind_v, config, ax=None):
     hodo.plot_colormapped(wind_u, wind_v, gpheight)
     hodo.add_grid(increment=hodograph_config['grid_increment'])
 
-def display_parameters(params, fig):
-    description = create_description(params)
+def display_parameters(config, params, fig):
 
-    fig.text(0.65, 0.45, description, fontsize=10, ha='left', va='top')
-
-
-def create_description(params):
-
-    def hl(headline):
-        return f"\n[ {headline} ]\n"
-
-    description = hl('POINTS')
-
-    for key, val in params['points'].items():
-        description += f"{key}: {round(val[1].to('degC'), 1).m}°C | {round(val[0].m, 1)} hPa\n"
-
-    description += hl('CAPE & CIN')
-
-    for key, val in params['cape_cin'].items():
-        description += f"{key}: {round(val.m, 1)} j/kg\n"
-
-    description += hl('TEMPERATURES AT GROUND')
-
-    for key, val in params['temperatures'].items():
-        description += f"{key}: {round(val[0].m, 1)} °K\n"
+    general = config['param_display']['general']
+    x = general['abs_position'][0]
+    y = general['abs_position'][1]
     
-    description += hl('INDICES')
+    def param_block(param_category, category_name):
 
-    for key, val in params['indices'].items():
-        description += f"{key}: {round(float(val.m), 1)}\n"
+        category = config['param_display']['categories'][category_name]
 
-    return description
+        """
+        
+        """
+        cat_x = x + category['rel_position'][0]
+        cat_y = y + category['rel_position'][1]
+
+        headline = category['headline']
+        unit = category['unit']
+
+        headline_elevation = general['headline_elevation']
+        indent = general['indent']
+        line_spacing = general['line_spacing']
+        key_val_spacing = general['key_val_spacing']
+
+        fig.text(cat_x, cat_y + headline_elevation, headline, fontsize=11, ha='left', va='top')
+        for i, (key, val) in enumerate(param_category.items()):
+            i += 1
+            try:
+                key_val_spacing = category['key_val_spacing']
+            except KeyError:
+                pass
+
+
+            # create string to display key as headline
+            key_text = f"{key}:" 
+            fig.text(cat_x + indent , cat_y - i*line_spacing, key_text, fontsize=9, ha='left', va='top')
+            
+            # create string to display value indented and below the headline, 
+            # with corresponding abbreviated units from the config file (handed by display_config variable)
+            if category_name == 'points':
+                val_text = f"{round(val[1].to('degC'), 1).m}{unit[0]} | {round(val[0].m, 1)}{unit[1]}"
+                fig.text(cat_x + indent + key_val_spacing , cat_y - i*line_spacing, val_text, fontsize=9, ha='left', va='top')
+            elif category_name == 'temperatures':
+                val_text = f"{round(val[0].m, 1)}{unit}"
+                fig.text(cat_x + indent + key_val_spacing , cat_y - i*line_spacing, val_text, fontsize=9, ha='left', va='top')
+            else:
+                val_text = f"{round(float(val.m), 1)}{unit}"
+                fig.text(cat_x + indent + key_val_spacing , cat_y - i*line_spacing, val_text, fontsize=9, ha='left', va='top')
+
+    for key in params.keys():
+        param_block(params[key], key)
+
 
