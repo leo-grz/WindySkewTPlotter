@@ -1,26 +1,31 @@
-import json
 from metpy.units import units
 import metpy.calc as mpcalc
 import numpy as np
+import json
 
-# without argument loads in config parameters
 def load_json_data(filepath='src\\config.json'):
 
-    '''This function reads out the contents of a JSON file and returns them in a variable. 
-    When no parameter is given, it loads the config data stored in src/config.json'''
+    '''
+    Generic function to load data from a JSON file
+
+    Args:
+    filepath : string : Path to the JSON file to load. 
+        Per default the 'src\\config.json' is loaded if no other filepath is given
+    
+    Returns:
+    dict : JSON contents of specified file.
+    '''
     
     try:
         with open(filepath, 'r') as f:
             data = json.load(f)
         return data
     except FileNotFoundError as e:
-        if filepath == 'config.json':
-            raise FileNotFoundError(f"The default configuration file ('src\\config.json') couldn't be found. Terminating program.") from e
-        else:
-            raise FileNotFoundError(f"File '{filepath}' not found. Terminating program.") from e
+        raise FileNotFoundError(f'File \'{filepath}\' not found. Terminating program.') from e
         
 def extract_data(data, fields, min_points=5):
-    """
+
+    '''
     Generic function to extract data from a windy.com JSON sounding.
     
     Args:
@@ -34,7 +39,8 @@ def extract_data(data, fields, min_points=5):
     
     Raises:
     ValueError : If data points are less than `min_points` or mismatched lengths.
-    """
+    '''
+
     # create empty list for every variable to extract
     extracted_data = [[] for _ in fields]
 
@@ -67,14 +73,24 @@ def extract_data(data, fields, min_points=5):
        not all(len(data_list) == len(extracted_data[0]) for data_list in extracted_data):
         raise ValueError('Too few data points or mismatched lengths. Terminating program.')
     
+    # adding proper units to data
     extracted_data_with_units = add_units(extracted_data, fields)
 
     return extracted_data_with_units
 
 def add_units(extracted_data, fields):
 
-    """
-    """
+    '''
+    Function to add pint.Quantity (metpy.units) to a dataset retreived by the extract_data function.
+
+    Args:
+    extracted_data : 2D list : List of data retreived by extract_data function
+    fields : list : Names of attributes which describe the extracted data, 
+        identical to the fields-variable that has to be given to the extract_data function
+    
+    Returns:
+    list : list of numpy arrays with corresponding units attatched
+    '''
 
     default_units = {
         'pressure': units.hPa,
@@ -96,8 +112,19 @@ def add_units(extracted_data, fields):
 
 def calc_params(pres, temp, dew):
 
-    '''Needs pressure, temperature, dewpoint and parcel trace to return a dictionary
-    which contains LCL, LFC, EL, CCL, CAPE, CIN'''
+    '''
+    Function to calculate meteorological parameters like points (lcl, lfc...), 
+    cape & cin, indices, temperatures and parcel profile
+    for plotting, displaying and further analysis in the matplotlib fig.
+
+    Args:
+    pres : pint.Quantity (np.array), units.hPa : Array with pressure values from sounding
+    temp : pint.Quantity (np.array), units.degK : Array with temperature values from sounding
+    dew : pint.Quantity (np.array), units.degK : Array with dewpoint values from sounding
+
+    Returns:
+    dict : Contains all calculated temperatures, indices, points and quantities
+    '''
 
     parcel_profile = mpcalc.parcel_profile(pres, temp[0], dew[0])
 
@@ -123,32 +150,32 @@ def calc_params(pres, temp, dew):
 
     params = {
         # points on graph, x-value: °K, y-value: hPa, layout: (hPa, K)
-        "points": {
-            "LCL": lcl,
-            "LFC": lfc,
-            "EL": el,
-            "CCL": ccl,
+        'points': {
+            'LCL': lcl,
+            'LFC': lfc,
+            'EL': el,
+            'CCL': ccl,
         },
         # cape and cin in j/kg
-        "cape_cin": {
-            "CAPE": cape,
-            "CIN": cin
+        'cape_cin': {
+            'CAPE': cape,
+            'CIN': cin
         },
         # temperatures
-        "temperatures": {
-            "\u03B8e": equiv_pot_temp,
-            "Tw": wet_bulb_temp,
-            "\u03B8w": wet_bulb_pot_temp
+        'temperatures': {
+            '\u03B8e': equiv_pot_temp,
+            'Tw': wet_bulb_temp,
+            '\u03B8w': wet_bulb_pot_temp
         },
         # indices generally don't have units!
-        "indices": {
-            "Lifted Index": lifted_index,
-            "K Index": k_index,
-            "Total Totals Index": total_totals_index,
-            "Showalter Index": showalter_index
+        'indices': {
+            'Lifted Index': lifted_index,
+            'K Index': k_index,
+            'Total Totals Index': total_totals_index,
+            'Showalter Index': showalter_index
         },
-        "other": {
-            "Parcel Profile": parcel_profile
+        'other': {
+            'Parcel Profile': parcel_profile
         }
     }
 
