@@ -79,9 +79,9 @@ def create_skewt_plot(extracted_data, config, params, fig=None, ax=None):
 
     # show parameters as points in plot
     if skewt_config['functionalities']['show_params']:
-        y = [l[0] for l in params['points'].values()]
-        x = [l[1] for l in params['points'].values()]
-        labels = list(params['points'].keys())
+        y = [l[0] for l in params.get('points').values()]
+        x = [l[1] for l in params.get('points').values()]
+        labels = list(params.get('points').keys())
 
         # show params as points in plot
         skew.ax.scatter(x, y, marker='x', c='purple', s=50, zorder=5) 
@@ -89,6 +89,9 @@ def create_skewt_plot(extracted_data, config, params, fig=None, ax=None):
         # Add labels to each point
         for i, label in enumerate(labels):        
             skew.ax.text(x[i] + 1 * units.degK, y[i], label, c='purple',fontsize=8, zorder=5)
+
+    skew.ax.set_xlabel(f'temperature ({units.degC})')
+    skew.ax.set_ylabel(f'pressure ({units.hPa})')
 
     skew.ax.set_xlim(skewt_config['xlim'])
     skew.ax.set_ylim(skewt_config['ylim'])
