@@ -6,8 +6,8 @@
         "title": "skew-t of radio sounding",
         "grid": true,
         "legend": true,
-        "xlim": [-40, 40],
-        "ylim": [1050, 95],
+        "xlim": [-80, 30],
+        "ylim": [1000, 100],
         "functionalities": {
             "show_cape_cin": true,
             "show_params": true,
@@ -50,8 +50,6 @@
                 "unit": "",
                 "key_val_spacing": 0.08
             }
-        }
-        
+        }  
     }
-
 }

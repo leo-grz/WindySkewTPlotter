@@ -4,7 +4,6 @@
 - Mouse hovering feature.
     - reduce lags?
     - Over mouse hover: mixed ratio, dalr, malr, isobar, points at temp, dew and parcel trace
-- Adding Radiosonde metadata (from end of JSON file)
 - dis/enable Functionalities with buttons
     - User Interface
     - windy.com plugin possible?
@@ -17,5 +16,5 @@
 - verify data is in possible range
     - report outliers
 - Format README and TODO
-- format Parameter Descriptions
 - Add forecast guidance for parameters, which ranges mean what?
+- Adding Radiosonde metadata (from end of JSON file)

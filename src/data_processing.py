@@ -3,92 +3,82 @@ import metpy.calc as mpcalc
 import numpy as np
 import json
 
-def load_json_data(filepath='src\\config.json'):
+def load_json_data(filepath='src/config.json'):
 
     '''
     Generic function to load data from a JSON file
 
-    Args:
+    Paramters
+    ---------
     filepath : string : Path to the JSON file to load. 
-        Per default the 'src\\config.json' is loaded if no other filepath is given
+        Per default the 'src/config.json' is loaded if no other filepath is given
     
-    Returns:
+    Returns
+    -------
     dict : JSON contents of specified file.
     '''
     
     try:
         with open(filepath, 'r') as f:
-            data = json.load(f)
-        return data
+            return json.load(f)
+        
     except FileNotFoundError as e:
         raise FileNotFoundError(f'File \'{filepath}\' not found. Terminating program.') from e
         
 def extract_data(data, fields, min_points=5):
-
-    '''
-    Generic function to extract data from a windy.com JSON sounding.
     
-    Args:
+    '''
+    Function to extract data from a windy.com JSON sounding.
+    
+    Paramters
+    ---------
     data: dict : The JSON data to extract from.
     fields: list : List of fields to extract (e.g., ['pressure', 'temp', 'dewpoint']).
     min_points: int : Minimum number of points required for the data to be valid.
     pressure_filter: tuple : Range of acceptable pressure values (used for filtering pressure field).
     
-    Returns:
-    list : A list of lists where each list corresponds to a field's extracted data.
+    Returns
+    -------
+    dict : A dictionary of lists where each list corresponds to a field's extracted data.
     
-    Raises:
+    Raises
+    ------
     ValueError : If data points are less than `min_points` or mismatched lengths.
     '''
 
-    # create empty list for every variable to extract
-    extracted_data = [[] for _ in fields]
+    extracted_data = {field: [] for field in fields}  # Using a dictionary for clarity
 
-    # amount of data points in the json file
-    data_len = len(data['features'])
+    for feature in data['features']:
+        properties = feature['properties']
 
-    for x in range(data_len):
-        properties = data['features'][x]['properties']
+        current_values = [properties.get(field) for field in fields]
 
-        current_values = []
-        for field in fields:
-            value = properties.get(field)
-            current_values.append(value)
-
-
-        # Check if all values are present
         if all(current_values):
-            # Optional filtering by pressure
-            if 'pressure' in fields:
-                pressure_idx = fields.index('pressure')
-                p = current_values[pressure_idx]
-                if not (1000 > float(p) > 100):
-                    continue  # Skip if pressure is outside the filter range
+            if 'pressure' in fields and not (1000 > float(current_values[fields.index('pressure')]) > 100):
+                continue  # Skip based on pressure filtering
 
-            for i, value in enumerate(current_values):
-                extracted_data[i].append(float(value))
+            for i, field in enumerate(fields):
+                extracted_data[field].append(float(current_values[i]))
 
-    # Ensure valid data length
-    if any(len(data_list) < min_points for data_list in extracted_data) or \
-       not all(len(data_list) == len(extracted_data[0]) for data_list in extracted_data):
-        raise ValueError('Too few data points or mismatched lengths. Terminating program.')
-    
-    # adding proper units to data
-    extracted_data_with_units = add_units(extracted_data, fields)
+    # Ensure data validity
+    if any(len(values) < min_points for values in extracted_data.values()) or \
+       not all(len(values) == len(extracted_data[fields[0]]) for values in extracted_data.values()):
+        raise ValueError('Too few data points or mismatched lengths.')
 
-    return extracted_data_with_units
+    return add_units(extracted_data)
 
-def add_units(extracted_data, fields):
+
+def add_units(extracted_data):
 
     '''
     Function to add pint.Quantity (metpy.units) to a dataset retreived by the extract_data function.
 
-    Args:
-    extracted_data : 2D list : List of data retreived by extract_data function
-    fields : list : Names of attributes which describe the extracted data, 
-        identical to the fields-variable that has to be given to the extract_data function
-    
-    Returns:
+    Parameters
+    ----------
+    extracted_data :  dict(list) :  Dict with pint.Quantity values from sounding
+
+    Returns
+    -------
     list : list of numpy arrays with corresponding units attatched
     '''
 
@@ -100,79 +90,53 @@ def add_units(extracted_data, fields):
         'wind_u': units.knots,
         'wind_v': units.knots
     }
+    return {key: np.array(val) * default_units[key] for key, val in extracted_data.items()}
 
-    extracted_data_with_units = []
 
-    for i, name in enumerate(fields):
-        if name in default_units.keys() and type(extracted_data[i]) == list:
-            extracted_data_with_units.append(np.array(extracted_data[i]) * default_units[name])
+def calc_params(extracted_data):
     
-    return extracted_data_with_units
-
-
-def calc_params(pres, temp, dew):
-
     '''
     Function to calculate meteorological parameters like points (lcl, lfc...), 
     cape & cin, indices, temperatures and parcel profile
     for plotting, displaying and further analysis in the matplotlib fig.
 
-    Args:
-    pres : pint.Quantity (np.array), units.hPa : Array with pressure values from sounding
-    temp : pint.Quantity (np.array), units.degK : Array with temperature values from sounding
-    dew : pint.Quantity (np.array), units.degK : Array with dewpoint values from sounding
+    Parameters
+    ----------
+    extracted_data :  dict(pint.Quantity) :  Dict with pint.Quantity values from sounding
 
-    Returns:
+    Returns
+    -------
     dict : Contains all calculated temperatures, indices, points and quantities
     '''
 
+    pres = extracted_data.get('pressure', 1)
+    temp = extracted_data.get('temp', 1)
+    dew = extracted_data.get('dewpoint', 1)
+
     parcel_profile = mpcalc.parcel_profile(pres, temp[0], dew[0])
-
-    # points
-    lcl = mpcalc.lcl(pres[0], temp[0], dew[0])
-    lfc = mpcalc.lfc(pres, temp, dew)
-    el = mpcalc.el(pres, temp, dew)
-    ccl = mpcalc.ccl(pres, temp, dew)[:2]  # Extract only pressure and temperature
-    
-    # temperatures
-    equiv_pot_temp = mpcalc.equivalent_potential_temperature(pres, temp, dew)
-    wet_bulb_temp = mpcalc.wet_bulb_temperature(pres, temp, dew)
-    wet_bulb_pot_temp = mpcalc.wet_bulb_potential_temperature(pres, temp, dew)
-
-    # cape, cin
     cape, cin = mpcalc.cape_cin(pres, temp, dew, parcel_profile)
 
-    # indices
-    lifted_index = mpcalc.lifted_index(pres, temp, parcel_profile)
-    k_index = mpcalc.k_index(pres, temp, dew)
-    total_totals_index = mpcalc.total_totals_index(pres, temp, dew)
-    showalter_index = mpcalc.showalter_index(pres, temp, dew)
-
     params = {
-        # points on graph, x-value: °K, y-value: hPa, layout: (hPa, K)
         'points': {
-            'LCL': lcl,
-            'LFC': lfc,
-            'EL': el,
-            'CCL': ccl,
+            'LCL': mpcalc.lcl(pres[0], temp[0], dew[0]),
+            'LFC': mpcalc.lfc(pres, temp, dew),
+            'EL': mpcalc.el(pres, temp, dew),
+            'CCL': mpcalc.ccl(pres, temp, dew)[:2]  # Extracted only necessary values
         },
-        # cape and cin in j/kg
         'cape_cin': {
             'CAPE': cape,
             'CIN': cin
         },
-        # temperatures
         'temperatures': {
-            '\u03B8e': equiv_pot_temp,
-            'Tw': wet_bulb_temp,
-            '\u03B8w': wet_bulb_pot_temp
+            '\u03B8e': mpcalc.equivalent_potential_temperature(pres, temp, dew),
+            'Tw': mpcalc.wet_bulb_temperature(pres, temp, dew),
+            '\u03B8w': mpcalc.wet_bulb_potential_temperature(pres, temp, dew)
         },
-        # indices generally don't have units!
         'indices': {
-            'Lifted Index': lifted_index,
-            'K Index': k_index,
-            'Total Totals Index': total_totals_index,
-            'Showalter Index': showalter_index
+            'Lifted Index': mpcalc.lifted_index(pres, temp, parcel_profile),
+            'K Index': mpcalc.k_index(pres, temp, dew),
+            'Total Totals Index': mpcalc.total_totals_index(pres, temp, dew),
+            'Showalter Index': mpcalc.showalter_index(pres, temp, dew)
         },
         'other': {
             'Parcel Profile': parcel_profile
@@ -180,5 +144,3 @@ def calc_params(pres, temp, dew):
     }
 
     return params
-
-
