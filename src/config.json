@@ -1,12 +1,12 @@
 {
-    "sounding_file": "data\\windy_sounding1.json",
-    "title": "windy_sounding1.json",
+    "sounding_file": "data/windy_sounding_example.json",
+    "title": "Source: data/windy_sounding_example.json",
     "figsize": [15, 10],
     "skewt": {
         "title": "skew-t of radio sounding",
         "grid": true,
         "legend": true,
-        "xlim": [-80, 30],
+        "xlim": [-40, 30],
         "ylim": [1000, 100],
         "functionalities": {
             "show_cape_cin": true,

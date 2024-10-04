@@ -37,3 +37,8 @@ git clone https://github.com/leo-grz/radio_sounding.git
 cd radio_sounding
 pip install -r requirements.txt
 
+
+
+- TODO FERTIG MACHEN
+- BILDER ADDEN VON PLOTS
+- EINE BEISPIEL JSON DATEI

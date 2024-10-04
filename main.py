@@ -9,14 +9,14 @@ def main():
     start_time = perf_counter()
 
     config = load_json_data()
-    config['sounding_file'] = 'data/windy_sounding2.json'
+    #config['sounding_file'] = 'data/windy_sounding2.json'
 
     try:
 
         fig = plt.figure(figsize=tuple(config['figsize']))
         gs = gridspec.GridSpec(10, 15)
         
-        ax1 = fig.add_subplot(gs[:, 0:10]) # skewt ax
+        ax1 = fig.add_subplot(gs[:, 0:10], projection='skewx') # skewt ax
         ax2 = fig.add_subplot(gs[0:5, 10:15]) # hodograph ax
 
         windy_sounding = load_json_data(config['sounding_file'])
