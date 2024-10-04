@@ -1,5 +1,4 @@
 # TODO List
-**For now this project is set on ice.**
 
 ## Overview
 This document tracks pending tasks, planned improvements, and bug fixes for the project.
@@ -13,7 +12,6 @@ This document tracks pending tasks, planned improvements, and bug fixes for the 
 
 ### 🔧 Current Tasks
 #### 🟥 High Priority
-- [ ] Fix Skew-T subplot=ax bug
 
 #### 🟧 Medium Priority
 
@@ -38,7 +36,6 @@ This document tracks pending tasks, planned improvements, and bug fixes for the 
 ---
 
 ### 🐛 Known Bugs
-- [ ] **Supposed Skew-T does not show skewed plots** when creating the fig and ax objects in main.py. The error lies in the matplotlib creation of the fig and handing it to the SkewT constructor of metpy by handing the matplotlib ax to it using the subplot parameter
 
 ---
 

@@ -13,12 +13,6 @@ def main():
 
     try:
 
-        fig = plt.figure(figsize=tuple(config['figsize']))
-        gs = gridspec.GridSpec(10, 15)
-        
-        ax1 = fig.add_subplot(gs[:, 0:10], projection='skewx') # skewt ax
-        ax2 = fig.add_subplot(gs[0:5, 10:15]) # hodograph ax
-
         windy_sounding = load_json_data(config['sounding_file'])
 
         extracted_data = extract_data(windy_sounding, 
@@ -26,8 +20,16 @@ def main():
         
         params = calc_params(extracted_data)
 
-        create_skewt_plot(extracted_data, config, params, fig, ax1)
-        create_hodograph_plot(extracted_data, config, ax2)
+
+
+        fig = plt.figure(figsize=tuple(config['figsize']))
+        gs = gridspec.GridSpec(10, 15)
+        
+        gs_skewt = gs[:, 0:10]
+        ax_hodograph = fig.add_subplot(gs[0:5, 10:15]) # hodograph ax
+
+        create_skewt_plot(extracted_data, config, params, fig, gs_skewt)
+        create_hodograph_plot(extracted_data, config, ax_hodograph)
 
         params.popitem() # to omit the 'others' category in params, since parcel trace shouldn't be displayed
         display_parameters(config, params, fig)

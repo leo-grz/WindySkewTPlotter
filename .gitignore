@@ -4,7 +4,7 @@ __pycache__/
 .env
 test1.py
 test2.py
-tests/
+extra/
 
 /data/*
 !/data/windy_sounding_example.json

@@ -4,7 +4,7 @@ from metpy.units import units
 import matplotlib.pyplot as plt
 
 
-def create_skewt_plot(extracted_data, config, params, fig=None, ax=None):
+def create_skewt_plot(extracted_data, config, params, fig, gridspec):
 
     '''
     Creates a Skew-T plot using the provided pressure, temperature, dewpoint, 
@@ -15,10 +15,8 @@ def create_skewt_plot(extracted_data, config, params, fig=None, ax=None):
     extracted_data :  dict(pint.Quantity) :  Dict with pint.Quantity values from sounding
     config : dict : Configuration dictionary containing plot settings and functionalities.
     params : dict : Additional parameters used for plotting and displaying (e.g., parcel profile, temperatures).
-    fig : matplotlib.figure.Figure, optional: 
-        A Matplotlib figure object to plot on. If None, a new figure is created.
-    ax : matplotlib.axes.Axes, optional : 
-        A Matplotlib axes object. If None, a new axis is created.
+    fig : matplotlib.figure.Figure : A Matplotlib figure object to plot on.
+    gridspec : matplotlib.gridspec.GridSpec, optional : Gridspec to set the position of skew-t in fig.
 
     Returns
     -------
@@ -43,11 +41,7 @@ def create_skewt_plot(extracted_data, config, params, fig=None, ax=None):
     skewt_config = config['skewt']
     parcel_profile = params['other']['Parcel Profile'].to('degC')
 
-    if not fig or not ax:
-        fig = plt.figure(figsize=tuple(skewt_config['figsize']))
-        skew = SkewT(fig, rotation=45)
-    else:
-        skew = SkewT(fig, rotation=45, subplot=ax)
+    skew = SkewT(fig, rotation=45, subplot=gridspec)
 
     skew.plot(pres, temp, 'red', label='Temperature')
     skew.plot(pres, dew, 'blue', label='Dewpoint')
