@@ -19,6 +19,14 @@
     "hodograph": {
         "component_range": 40,
         "grid_increment": 10
+    }, 
+    "default_ranges": {
+        "pressure": [10, 1000],
+        "temp": [175, 330],
+        "dewpoint": [150, 300],
+        "gpheight": [0, 15000],
+        "wind_u": [-60, 60],
+        "wind_v": [-60, 60]
     },
     "param_display": {
         "general": {
