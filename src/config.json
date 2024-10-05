@@ -18,7 +18,12 @@
     },
     "hodograph": {
         "component_range": 40,
-        "grid_increment": 10
+        "grid_increment": 10,
+        "pressure_levels":[
+            1000, 975, 950, 925, 900, 
+            850, 800, 750, 700, 650, 
+            600, 500, 400, 300,200, 100
+            ]
     }, 
     "default_ranges": {
         "pressure": [10, 1000],

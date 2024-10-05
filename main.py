@@ -9,14 +9,14 @@ def main():
     start_time = perf_counter()
 
     config = load_json_data()
-    #config['sounding_file'] = 'data/windy_sounding2.json'
+    config['sounding_file'] = 'data/windy_sounding4.json'
 
-    #try:
+    # try:
 
     windy_sounding = load_json_data(config['sounding_file'])
 
-    extracted_data = extract_data(windy_sounding, 
-                ['pressure', 'temp', 'dewpoint', 'gpheight', 'wind_u', 'wind_v'])
+    attributes = ['pressure', 'temp', 'dewpoint', 'gpheight', 'wind_u', 'wind_v']
+    extracted_data = extract_data(windy_sounding, attributes)
     
 
     extracted_data = clean_extracted_data(extracted_data, config['default_ranges'])
@@ -37,8 +37,11 @@ def main():
     create_skewt_plot(extracted_data, config, params, fig, gs_skewt)
     create_hodograph_plot(extracted_data, config, ax_hodograph)
 
-    params.popitem() # to omit the 'others' category in params, since parcel trace shouldn't be displayed
-    display_parameters(config, params, fig)
+
+    # for display_parameters function, 
+    # to omit the 'others' category in params, since parcel trace shouldn't be displayed
+    params.popitem() 
+    display_parameters(config, params, fig)# there must be a better solution
 
 
     print(f'Execution time: {perf_counter() - start_time:.4f} seconds')

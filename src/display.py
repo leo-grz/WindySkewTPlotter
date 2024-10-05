@@ -2,6 +2,7 @@ from metpy.plots import SkewT
 from metpy.plots import Hodograph
 from metpy.units import units
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def create_skewt_plot(extracted_data, config, params, fig, gridspec):
@@ -51,7 +52,7 @@ def create_skewt_plot(extracted_data, config, params, fig, gridspec):
     skew.plot_moist_adiabats(lw=1, linestyle='dashed', colors='darkgreen', alpha=0.4)
     skew.plot_mixing_lines(lw=1, linestyle='dashed', colors='darkblue', alpha=0.4)
 
-    skew.plot_barbs(pres, wind_u, wind_v)
+    skew.plot_barbs(pres, wind_u, wind_v) # <=============== AMOUNT OF FLAGS
         
     # adding temperatures
     if skewt_config['functionalities']['show_equiv_pot_temp']:
@@ -117,19 +118,42 @@ def create_hodograph_plot(extracted_data, config, ax=None):
     ---------------
     - Plots a hodograph with colormapped wind vectors by height.
     - Adds a grid to the hodograph plot based on the configured grid increment.
+    - Reduces amount of displayed datapoints to the measurements at pressure levels derived from config.
     '''
-
-    gpheight = extracted_data.get('gpheight', 1)
+    pres = extracted_data.get('pressure', 1)
     wind_u = extracted_data.get('wind_u', 1)
     wind_v = extracted_data.get('wind_v', 1)
 
+    # hodograph becomes messy if too many measurements are drawn
     hodograph_config = config['hodograph']
+
+    pres_lvls = hodograph_config['pressure_levels']
+
+    if len(pres) > len(pres_lvls)+5:
+
+        indices = []
+        index_pres_lvls = 0
     
+        for i, val in enumerate(pres):
+            if val.m <= pres_lvls[index_pres_lvls]:
+
+                if pres_lvls[index_pres_lvls] >= val.m >= pres_lvls[index_pres_lvls+1]:
+                    indices.append(i)
+                index_pres_lvls += 1
+
+        pres = np.array([pres[x].m for x in indices]) * pres.units
+        wind_u = np.array([wind_u[x].m for x in indices]) * wind_u.units
+        wind_v = np.array([wind_v[x].m for x in indices]) * wind_v.units
+
+        print(f'\nHodograph datapoint selection:')
+        for x in [pres, wind_u, wind_v]:
+            print(f'ARRAY: {x}, LENGTH: {len(x)}')
+
     if not ax:
         _, ax = plt.subplots(figsize=tuple(hodograph_config['figsize']))
 
     hodo = Hodograph(ax, component_range=hodograph_config['component_range'])
-    hodo.plot_colormapped(wind_u, wind_v, gpheight)
+    hodo.plot_colormapped(wind_u, wind_v, pres)
     hodo.add_grid(increment=hodograph_config['grid_increment'])
 
 def display_parameters(config, params, fig):
