@@ -85,42 +85,6 @@ def clean_extracted_data(extracted_data, default_ranges):
 
     return extracted_data # return cleaned data
 
-def plot_extracted_data(extracted_data, config):
-    default_ranges = config['default_ranges']
-
-    '''
-    documentation missing
-    '''
-
-    for key, val in extracted_data.items():
-        print(f'{key}: [{min(val).m}, {max(val).m}], LENGTH: {len(val)} | should be in range: {default_ranges[key]}')
-
-    def add_subplot(gs, attrib):
-        ax = fig.add_subplot(gs)
-        # add data plot
-        ax.plot(range(1, len(extracted_data[attrib])+1),extracted_data[attrib], c='blue')
-        # add minimum from range
-        ax.plot(range(1, len(extracted_data[attrib])+1), [default_ranges[attrib][0]
-                    for x in range(len(extracted_data[attrib]))], c='red')
-        # add maximum from range
-        ax.plot(range(1, len(extracted_data[attrib])+1), [default_ranges[attrib][1] 
-                    for x in range(len(extracted_data[attrib]))], c='red')
-        ax.set_xlabel('index')
-        ax.set_ylabel(f'{attrib} ({extracted_data[attrib].units})')
-        ax.grid(True)
-
-    fig = plt.figure(figsize=(10, 8))
-    gs = gridspec.GridSpec(3, 2, wspace=0.3, hspace=0.3)  # 3 rows, 2 columns
-
-    add_subplot(gs[0, 0], 'pressure')
-    add_subplot(gs[0, 1], 'gpheight')
-    add_subplot(gs[1, 0], 'temp')
-    add_subplot(gs[1, 1], 'dewpoint')
-    add_subplot(gs[2, 0], 'wind_u')
-    add_subplot(gs[2, 1], 'wind_v')
-
-    plt.show()
-
 def add_units(extracted_data):
 
     '''
@@ -162,9 +126,7 @@ def calc_params(extracted_data):
     dict : Contains all calculated temperatures, indices, points and quantities
     '''
 
-    pres = extracted_data.get('pressure', 1)
-    temp = extracted_data.get('temp', 1)
-    dew = extracted_data.get('dewpoint', 1)
+    pres, temp, dew = [extracted_data.get(key, 1) for key in ['pressure', 'temp', 'dewpoint']]
 
     parcel_profile = mpcalc.parcel_profile(pres, temp[0], dew[0])
     cape, cin = mpcalc.cape_cin(pres, temp, dew, parcel_profile)
@@ -197,3 +159,35 @@ def calc_params(extracted_data):
     }
 
     return params
+
+def extract_relevant_wind_data(extracted_data, config):
+
+    pres, wind_u, wind_v = [extracted_data.get(key, 1) for key in ['pressure', 'wind_u', 'wind_v']]
+
+    hodograph_data = {key: [] for key in ['pressure', 'wind_u', 'wind_v']}
+
+    pres_lvls = config['hodograph']['pressure_levels']
+
+    if len(pres) > len(pres_lvls)+5:
+
+        indices = []
+        index_pres_lvls = 0
+    
+        for i, val in enumerate(pres):
+            if val.m <= pres_lvls[index_pres_lvls]:
+
+                if pres_lvls[index_pres_lvls] >= val.m >= pres_lvls[index_pres_lvls+1]:
+                    indices.append(i)
+                index_pres_lvls += 1
+
+        hodograph_data['pressure'] = np.array([pres[x].m for x in indices]) * pres.units
+        hodograph_data['wind_u'] = np.array([wind_u[x].m for x in indices]) * wind_u.units
+        hodograph_data['wind_v'] = np.array([wind_v[x].m for x in indices]) * wind_v.units
+
+        print(f'\nHodograph datapoint selection:')
+        for x in [pres, wind_u, wind_v]:
+            print(f'ARRAY: {x}, LENGTH: {len(x)}')
+
+        return hodograph_data
+    
+    return extracted_data

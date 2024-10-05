@@ -2,8 +2,8 @@ from metpy.plots import SkewT
 from metpy.plots import Hodograph
 from metpy.units import units
 import matplotlib.pyplot as plt
-import numpy as np
-
+from matplotlib import gridspec
+from .data_processing import extract_relevant_wind_data
 
 def create_skewt_plot(extracted_data, config, params, fig, gridspec):
 
@@ -33,11 +33,7 @@ def create_skewt_plot(extracted_data, config, params, fig, gridspec):
     - Displays custom parameters as points with labels on the plot.
     '''
 
-    pres = extracted_data.get('pressure', 1)
-    temp = extracted_data.get('temp', 1)
-    dew = extracted_data.get('dewpoint', 1)
-    wind_u = extracted_data.get('wind_u', 1)
-    wind_v = extracted_data.get('wind_v', 1)
+    pres, temp, dew = [extracted_data.get(key, 1) for key in ['pressure', 'temp', 'dewpoint']]
 
     skewt_config = config['skewt']
     parcel_profile = params['other']['Parcel Profile'].to('degC')
@@ -52,7 +48,9 @@ def create_skewt_plot(extracted_data, config, params, fig, gridspec):
     skew.plot_moist_adiabats(lw=1, linestyle='dashed', colors='darkgreen', alpha=0.4)
     skew.plot_mixing_lines(lw=1, linestyle='dashed', colors='darkblue', alpha=0.4)
 
-    skew.plot_barbs(pres, wind_u, wind_v) # <=============== AMOUNT OF FLAGS
+    wind_data = extract_relevant_wind_data(extracted_data, config)
+    barb_pres, barb_wind_u, barb_wind_v = [wind_data.get(key, 1) for key in ['pressure', 'wind_u', 'wind_v']]
+    skew.plot_barbs(barb_pres, barb_wind_u, barb_wind_v) # <=============== AMOUNT OF FLAGS
         
     # adding temperatures
     if skewt_config['functionalities']['show_equiv_pot_temp']:
@@ -97,7 +95,7 @@ def create_skewt_plot(extracted_data, config, params, fig, gridspec):
 
 
 
-def create_hodograph_plot(extracted_data, config, ax=None):
+def create_hodograph_plot(extracted_data, config, ax):
 
     '''
     Creates a Hodograph plot using the provided geopotential height, wind components,
@@ -107,8 +105,7 @@ def create_hodograph_plot(extracted_data, config, ax=None):
     ----------
     extracted_data :  dict(pint.Quantity) :  Dict with pint.Quantity values from sounding
     config : dict : Configuration dictionary containing plot settings and functionalities.
-    ax : matplotlib.axes.Axes, optional : 
-        A Matplotlib axes object. If None, a new axis is created.
+    ax : matplotlib.axes.Axes : A Matplotlib axes object.
 
     Returns
     -------
@@ -120,37 +117,12 @@ def create_hodograph_plot(extracted_data, config, ax=None):
     - Adds a grid to the hodograph plot based on the configured grid increment.
     - Reduces amount of displayed datapoints to the measurements at pressure levels derived from config.
     '''
-    pres = extracted_data.get('pressure', 1)
-    wind_u = extracted_data.get('wind_u', 1)
-    wind_v = extracted_data.get('wind_v', 1)
 
     # hodograph becomes messy if too many measurements are drawn
+
+    wind_data = extract_relevant_wind_data(extracted_data, config)
+    pres, wind_u, wind_v = [wind_data.get(key, 1) for key in ['pressure', 'wind_u', 'wind_v']]
     hodograph_config = config['hodograph']
-
-    pres_lvls = hodograph_config['pressure_levels']
-
-    if len(pres) > len(pres_lvls)+5:
-
-        indices = []
-        index_pres_lvls = 0
-    
-        for i, val in enumerate(pres):
-            if val.m <= pres_lvls[index_pres_lvls]:
-
-                if pres_lvls[index_pres_lvls] >= val.m >= pres_lvls[index_pres_lvls+1]:
-                    indices.append(i)
-                index_pres_lvls += 1
-
-        pres = np.array([pres[x].m for x in indices]) * pres.units
-        wind_u = np.array([wind_u[x].m for x in indices]) * wind_u.units
-        wind_v = np.array([wind_v[x].m for x in indices]) * wind_v.units
-
-        print(f'\nHodograph datapoint selection:')
-        for x in [pres, wind_u, wind_v]:
-            print(f'ARRAY: {x}, LENGTH: {len(x)}')
-
-    if not ax:
-        _, ax = plt.subplots(figsize=tuple(hodograph_config['figsize']))
 
     hodo = Hodograph(ax, component_range=hodograph_config['component_range'])
     hodo.plot_colormapped(wind_u, wind_v, pres)
@@ -211,12 +183,7 @@ def display_parameters(config, params, fig):
         unit = category['unit']
         headline = category['headline']
         
-        try:
-            key_val_spacing = category['key_val_spacing']
-        except KeyError:
-            key_val_spacing = general['key_val_spacing']
-
-
+        key_val_spacing = category.get('key_val_spacing', general['key_val_spacing'])
 
         fig.text(cat_x, cat_y + headline_elevation, headline, fontsize=11, ha='left', va='top')
         for i, (key, val) in enumerate(param_category.items(), start=1):
@@ -239,4 +206,38 @@ def display_parameters(config, params, fig):
     for category_name, category_params in params.items():
         param_block(category_name, category_params)
 
+def plot_extracted_data(extracted_data, config):
+    default_ranges = config['default_ranges']
 
+    '''
+    documentation missing
+    '''
+
+    for key, val in extracted_data.items():
+        print(f'{key}: [{min(val).m}, {max(val).m}], LENGTH: {len(val)} | should be in range: {default_ranges[key]}')
+
+    def add_subplot(gs, attrib):
+        ax = fig.add_subplot(gs)
+        # add data plot
+        ax.plot(range(1, len(extracted_data[attrib])+1),extracted_data[attrib], c='blue')
+        # add minimum from range
+        ax.plot(range(1, len(extracted_data[attrib])+1), [default_ranges[attrib][0]
+                    for x in range(len(extracted_data[attrib]))], c='red')
+        # add maximum from range
+        ax.plot(range(1, len(extracted_data[attrib])+1), [default_ranges[attrib][1] 
+                    for x in range(len(extracted_data[attrib]))], c='red')
+        ax.set_xlabel('index')
+        ax.set_ylabel(f'{attrib} ({extracted_data[attrib].units})')
+        ax.grid(True)
+
+    fig = plt.figure(figsize=(10, 8))
+    gs = gridspec.GridSpec(3, 2, wspace=0.3, hspace=0.3)  # 3 rows, 2 columns
+
+    add_subplot(gs[0, 0], 'pressure')
+    add_subplot(gs[0, 1], 'gpheight')
+    add_subplot(gs[1, 0], 'temp')
+    add_subplot(gs[1, 1], 'dewpoint')
+    add_subplot(gs[2, 0], 'wind_u')
+    add_subplot(gs[2, 1], 'wind_v')
+
+    plt.show()
