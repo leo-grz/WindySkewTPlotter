@@ -18,11 +18,13 @@ def main():
     extracted_data = extract_data(windy_sounding, 
                 ['pressure', 'temp', 'dewpoint', 'gpheight', 'wind_u', 'wind_v'])
     
-    plot_extracted_data(extracted_data, config['default_ranges'])
 
     extracted_data = clean_extracted_data(extracted_data, config['default_ranges'])
 
     extracted_data = add_units(extracted_data)
+        
+    plot_extracted_data(extracted_data, config)
+
     
     params = calc_params(extracted_data)
 

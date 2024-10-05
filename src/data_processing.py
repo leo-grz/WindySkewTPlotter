@@ -75,49 +75,51 @@ def clean_extracted_data(extracted_data, default_ranges):
 
     # print(f'Indices to remove: {indices_to_remove}')
 
+    # for key, values in extracted_data.items():
+    #     if key in default_ranges:
+    #         min_val, max_val = default_ranges[key]
+    #         for idx, value in enumerate(values):
+    #             if not min_val <= value <= max_val:
+    #                 indices_to_remove[key].append(idx)
+
+
     return extracted_data # return cleaned data
 
-def plot_extracted_data(extracted_data, default_ranges):
+def plot_extracted_data(extracted_data, config):
+    default_ranges = config['default_ranges']
 
     '''
     documentation missing
     '''
 
+    for key, val in extracted_data.items():
+        print(f'{key}: [{min(val).m}, {max(val).m}], LENGTH: {len(val)} | should be in range: {default_ranges[key]}')
+
     def add_subplot(gs, attrib):
         ax = fig.add_subplot(gs)
-        ax.plot(range(1, len(extracted_data[attrib])+1),extracted_data[attrib])
-        ax.plot(range(1, len(extracted_data[attrib])+1), [default_ranges[attrib][0] for x in range(len(extracted_data[attrib]))], c='red')
-        ax.plot(range(1, len(extracted_data[attrib])+1), [default_ranges[attrib][1] for x in range(len(extracted_data[attrib]))], c='red')
+        # add data plot
+        ax.plot(range(1, len(extracted_data[attrib])+1),extracted_data[attrib], c='blue')
+        # add minimum from range
+        ax.plot(range(1, len(extracted_data[attrib])+1), [default_ranges[attrib][0]
+                    for x in range(len(extracted_data[attrib]))], c='red')
+        # add maximum from range
+        ax.plot(range(1, len(extracted_data[attrib])+1), [default_ranges[attrib][1] 
+                    for x in range(len(extracted_data[attrib]))], c='red')
         ax.set_xlabel('index')
-        ax.set_ylabel(attrib)
+        ax.set_ylabel(f'{attrib} ({extracted_data[attrib].units})')
         ax.grid(True)
-
-    for key, val in extracted_data.items():
-        print(f'{key}: [{min(val)}, {max(val)}], LENGTH: {len(val)} | should be in range: {default_ranges[key]}')
 
     fig = plt.figure(figsize=(10, 8))
     gs = gridspec.GridSpec(3, 2, wspace=0.3, hspace=0.3)  # 3 rows, 2 columns
 
     add_subplot(gs[0, 0], 'pressure')
-    add_subplot(gs[0, 1], 'temp')
-    add_subplot(gs[1, 0], 'dewpoint')
-    add_subplot(gs[1, 1], 'gpheight')
+    add_subplot(gs[0, 1], 'gpheight')
+    add_subplot(gs[1, 0], 'temp')
+    add_subplot(gs[1, 1], 'dewpoint')
     add_subplot(gs[2, 0], 'wind_u')
     add_subplot(gs[2, 1], 'wind_v')
 
     plt.show()
-
-
-    for key, values in extracted_data.items():
-        if key in default_ranges:
-            min_val, max_val = default_ranges[key]
-            for idx, value in enumerate(values):
-                if not min_val <= value <= max_val:
-                    indices_to_remove[key].append(idx)
-
-
-        
-    return extracted_data
 
 def add_units(extracted_data):
 
