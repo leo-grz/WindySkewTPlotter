@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import metpy.calc as mpcalc
 import numpy as np
 import json
-from matplotlib import gridspec
 
 def load_json_data(filepath='src/config.json'):
 
@@ -26,7 +25,7 @@ def load_json_data(filepath='src/config.json'):
         
     except FileNotFoundError as e:
         raise FileNotFoundError(f'File \'{filepath}\' not found. Terminating program.') from e
-        
+
 def extract_data(data, fields, min_points=5):
     
     '''
@@ -70,7 +69,9 @@ def extract_data(data, fields, min_points=5):
         
     return extracted_data
 
-def clean_extracted_data(extracted_data, default_ranges):
+def clean_extracted_data(extracted_data, config):
+
+    default_ranges = config['default_ranges']
     # indices_to_remove = {key: [] for key in extracted_data.keys()}
 
     # print(f'Indices to remove: {indices_to_remove}')
@@ -162,9 +163,11 @@ def calc_params(extracted_data):
 
 def extract_relevant_wind_data(extracted_data, config):
 
+    # load pressure, wind_u and win_v from extracted_data variable
     pres, wind_u, wind_v = [extracted_data.get(key, 1) for key in ['pressure', 'wind_u', 'wind_v']]
-
-    hodograph_data = {key: [] for key in ['pressure', 'wind_u', 'wind_v']}
+    
+    # create dictionary for selected data to return
+    extracted_wind_data = {key: [] for key in ['pressure', 'wind_u', 'wind_v']}
 
     pres_lvls = config['hodograph']['pressure_levels']
 
@@ -180,14 +183,14 @@ def extract_relevant_wind_data(extracted_data, config):
                     indices.append(i)
                 index_pres_lvls += 1
 
-        hodograph_data['pressure'] = np.array([pres[x].m for x in indices]) * pres.units
-        hodograph_data['wind_u'] = np.array([wind_u[x].m for x in indices]) * wind_u.units
-        hodograph_data['wind_v'] = np.array([wind_v[x].m for x in indices]) * wind_v.units
+        extracted_wind_data['pressure'] = np.array([pres[x].m for x in indices]) * pres.units
+        extracted_wind_data['wind_u'] = np.array([wind_u[x].m for x in indices]) * wind_u.units
+        extracted_wind_data['wind_v'] = np.array([wind_v[x].m for x in indices]) * wind_v.units
 
         print(f'\nHodograph datapoint selection:')
-        for x in [pres, wind_u, wind_v]:
+        for x in extracted_wind_data.values():
             print(f'ARRAY: {x}, LENGTH: {len(x)}')
 
-        return hodograph_data
+        return extracted_wind_data
     
     return extracted_data

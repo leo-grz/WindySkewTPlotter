@@ -16,33 +16,23 @@ def main():
     windy_sounding = load_json_data(config['sounding_file'])
 
     attributes = ['pressure', 'temp', 'dewpoint', 'gpheight', 'wind_u', 'wind_v']
-    extracted_data = extract_data(windy_sounding, attributes)
-    
+    extracted_data = extract_data(windy_sounding, attributes) # extract data from raw json format
+    extracted_data = clean_extracted_data(extracted_data, config) # clean data from outliers
+    extracted_data = add_units(extracted_data) # add units to data for displaying and further calculations
 
-    extracted_data = clean_extracted_data(extracted_data, config['default_ranges'])
-
-    extracted_data = add_units(extracted_data)
-        
-    plot_extracted_data(extracted_data, config)
-
-    
-    params = calc_params(extracted_data)
+    plot_extracted_data(extracted_data, config) # plot pressure, temperature, dewpoint, height and windspeeds for better data inspection
+    params = calc_params(extracted_data) # calculate indices, temperatures, points like lcl, lfc, el, lcc, cape, cin...
 
     fig = plt.figure(figsize=tuple(config['figsize']))
     gs = gridspec.GridSpec(10, 15)
-    
-    gs_skewt = gs[:, 0:10]
-    ax_hodograph = fig.add_subplot(gs[0:5, 10:15]) # hodograph ax
+    gs_skewt = gs[:, 0:10] # location where to show skew-t
+    ax_hodograph = fig.add_subplot(gs[0:5, 10:15]) # ax to plot hodograph on
 
     create_skewt_plot(extracted_data, config, params, fig, gs_skewt)
     create_hodograph_plot(extracted_data, config, ax_hodograph)
 
-
-    # for display_parameters function, 
-    # to omit the 'others' category in params, since parcel trace shouldn't be displayed
-    params.popitem() 
-    display_parameters(config, params, fig)# there must be a better solution
-
+    sounding_properties = windy_sounding.get('properties', 1)
+    display_parameters(config, params, fig, sounding_properties)
 
     print(f'Execution time: {perf_counter() - start_time:.4f} seconds')
 

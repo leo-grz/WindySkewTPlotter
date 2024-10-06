@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from .data_processing import extract_relevant_wind_data
 
+wind_data = None
+
+
 def create_skewt_plot(extracted_data, config, params, fig, gridspec):
 
     '''
@@ -128,7 +131,7 @@ def create_hodograph_plot(extracted_data, config, ax):
     hodo.plot_colormapped(wind_u, wind_v, pres)
     hodo.add_grid(increment=hodograph_config['grid_increment'])
 
-def display_parameters(config, params, fig):
+def display_parameters(config, params, fig, sounding_properties=None):
 
     '''
     Displays meteorological parameters on the given figure based on provided 
@@ -149,12 +152,12 @@ def display_parameters(config, params, fig):
     - Displays categories of parameters with headlines, units, and values.
     - Custom positioning and formatting of parameter blocks according to config.
     '''
+    # removing the 'other' category, since it shouldn't be displayed
+    if 'other' in params.keys():
+        params.popitem()
         
-    general = config['param_display']['general']
+    general = config['text_display']['general']
     x, y = general['abs_position']
-    headline_elevation = general['headline_elevation']
-    indent = general['indent']
-    line_spacing = general['line_spacing']
     
     def param_block(category_name, param_category):
         '''
@@ -176,21 +179,26 @@ def display_parameters(config, params, fig):
         - Custom formatting based on the category's configuration.
         '''
 
-        category = config['param_display']['categories'][category_name]
+        category = config['text_display']['categories'][category_name]
 
-        cat_x = x + category['rel_position'][0]
-        cat_y = y + category['rel_position'][1]
-        unit = category['unit']
-        headline = category['headline']
-        
-        key_val_spacing = category.get('key_val_spacing', general['key_val_spacing'])
+        cat_x = x + category.get('rel_position', 0)[0]
+        cat_y = y + category.get('rel_position', 0)[1]
 
-        fig.text(cat_x, cat_y + headline_elevation, headline, fontsize=11, ha='left', va='top')
+        # headline_elevation = general['headline_elevation']
+        # indent = general['indent']
+        # line_spacing = general.get('line_spacing'
+                                   
+        keys = ['headline_elevation', 'indent', 'line_spacing', 'unit', 'headline', 
+                    'key_val_spacing', 'text_fontsize', 'hl_fontsize' ]
+        headline_elevation, indent, line_spacing, unit, headline, key_val_spacing, \
+                    text_fontsize, hl_fontsize = [category.get(key, general[key]) for key in keys]
+
+        fig.text(cat_x, cat_y + headline_elevation, headline, fontsize=hl_fontsize, ha='left', va='top')
         for i, (key, val) in enumerate(param_category.items(), start=1):
 
             # create string to display key as headline
             key_text = f'{key}:' 
-            fig.text(cat_x + indent , cat_y - i*line_spacing, key_text, fontsize=9, ha='left', va='top')
+            fig.text(cat_x + indent , cat_y - i*line_spacing, key_text, fontsize=text_fontsize, ha='left', va='top')
             
             # create string to display value indented and below the headline, 
             # with corresponding abbreviated units from the config file
@@ -198,13 +206,19 @@ def display_parameters(config, params, fig):
                 val_text = f'{round(val[1].to('degC'), 1).m}{unit[0]} | {round(val[0].m, 1)}{unit[1]}'
             elif category_name == 'temperatures':
                 val_text = f'{round(val[0].m, 1)}{unit}'
+            elif category_name == 'sounding_properties':
+                val_text = f'{val}'
             else:
                 val_text = f'{round(float(val.m), 1)}{unit}'
 
-            fig.text(cat_x + indent + key_val_spacing , cat_y - i*line_spacing, val_text, fontsize=9, ha='left', va='top')
+            fig.text(cat_x + indent + key_val_spacing , cat_y - i*line_spacing, val_text, fontsize=text_fontsize, ha='left', va='top')
 
     for category_name, category_params in params.items():
         param_block(category_name, category_params)
+
+    if sounding_properties:
+        param_block('sounding_properties', sounding_properties)
+
 
 def plot_extracted_data(extracted_data, config):
     default_ranges = config['default_ranges']
@@ -240,4 +254,4 @@ def plot_extracted_data(extracted_data, config):
     add_subplot(gs[2, 0], 'wind_u')
     add_subplot(gs[2, 1], 'wind_v')
 
-    plt.show()
+    # plt.show()
