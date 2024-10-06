@@ -178,15 +178,21 @@ def display_parameters(config, params, fig, sounding_properties=None):
         - Displays each parameter with a key-value pair and corresponding units.
         - Custom formatting based on the category's configuration.
         '''
+        def on_hover(event):
+
+            for text, full_text, short_text in text_elements:
+                if text.contains(event)[0]:  # Check if mouse is over the text
+                    text.set_text(full_text)  # Set to full text on hover
+                    fig.canvas.draw_idle()    # Redraw canvas
+                else:
+                    text.set_text(short_text)  # Revert to short text when not hovering
+                    fig.canvas.draw_idle()
+        text_elements = []
 
         category = config['text_display']['categories'][category_name]
 
         cat_x = x + category.get('rel_position', 0)[0]
         cat_y = y + category.get('rel_position', 0)[1]
-
-        # headline_elevation = general['headline_elevation']
-        # indent = general['indent']
-        # line_spacing = general.get('line_spacing'
                                    
         keys = ['headline_elevation', 'indent', 'line_spacing', 'unit', 'headline', 
                     'key_val_spacing', 'text_fontsize', 'hl_fontsize' ]
@@ -207,17 +213,29 @@ def display_parameters(config, params, fig, sounding_properties=None):
             elif category_name == 'temperatures':
                 val_text = f'{round(val[0].m, 1)}{unit}'
             elif category_name == 'sounding_properties':
+
+                if len(str(val)) >= 20:
+                    # to extend text on hovering over it, if its so long that it would overlap with the skewt
+                    short_text, full_text = str(val)[0:15] + '...', val
+                    text = fig.text(cat_x + indent + key_val_spacing , cat_y - i*line_spacing, short_text, fontsize=text_fontsize, ha='left', va='top')
+                    text_elements += [(text, full_text, short_text)]
+                    continue
+
                 val_text = f'{val}'
             else:
                 val_text = f'{round(float(val.m), 1)}{unit}'
 
             fig.text(cat_x + indent + key_val_spacing , cat_y - i*line_spacing, val_text, fontsize=text_fontsize, ha='left', va='top')
+        if category_name == 'sounding_properties':
+            fig.canvas.mpl_connect("motion_notify_event", on_hover)
 
     for category_name, category_params in params.items():
         param_block(category_name, category_params)
 
     if sounding_properties:
         param_block('sounding_properties', sounding_properties)
+
+
 
 
 def plot_extracted_data(extracted_data, config):

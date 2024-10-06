@@ -41,8 +41,8 @@
             "indent": 0.01,
             "line_spacing": 0.02,
             "key_val_spacing": 0.04,
-            "text_fontsize": 11,
-            "hl_fontsize": 12,
+            "text_fontsize": 9,
+            "hl_fontsize": 11,
             "headline": "NO DATA",
             "unit": "NO DATA"
         },
