@@ -1,5 +1,4 @@
 from metpy.units import units
-import matplotlib.pyplot as plt
 import metpy.calc as mpcalc
 import numpy as np
 import json
@@ -72,18 +71,27 @@ def extract_data(data, fields, min_points=5):
 def clean_extracted_data(extracted_data, config):
 
     default_ranges = config['default_ranges']
-    # indices_to_remove = {key: [] for key in extracted_data.keys()}
+    indices_to_remove = {key: [] for key in extracted_data.keys()}
 
-    # print(f'Indices to remove: {indices_to_remove}')
+    for key, values in extracted_data.items():
+        if key in default_ranges:
+            min_val, max_val = default_ranges.get(key, (None, None))
+            if None in (min_val, max_val): 
+                print(f'function: clean_extracted_data -- skipping {key} since range could not be found.')
+                continue # if range couldn't be retreived
+            for index, value in enumerate(values):
+                if not (min_val <= value <= max_val):
+                    indices_to_remove[key].append((index, value))
 
-    # for key, values in extracted_data.items():
-    #     if key in default_ranges:
-    #         min_val, max_val = default_ranges[key]
-    #         for idx, value in enumerate(values):
-    #             if not min_val <= value <= max_val:
-    #                 indices_to_remove[key].append(idx)
+    indices_to_remove_list = sum(indices_to_remove.values(), [])
+    print(f'function: clean_extracted_data -- indices to remove: {indices_to_remove} ({len(indices_to_remove_list)} indices)')
+    
+    if len(indices_to_remove_list) == 0:
+        return extracted_data
 
-
+    for lst in extracted_data.values():
+        for idx,_ in sorted(indices_to_remove_list, reverse=True):
+            lst.pop(idx)
     return extracted_data # return cleaned data
 
 def add_units(extracted_data):
