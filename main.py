@@ -27,12 +27,17 @@ def main():
     gs = gridspec.GridSpec(10, 15)
     gs_skewt = gs[:, 0:10] # location where to show skew-t
     ax_hodograph = fig.add_subplot(gs[0:5, 10:15]) # ax to plot hodograph on
-
-    create_skewt_plot(extracted_data, config, params, fig, gs_skewt)
-    create_hodograph_plot(extracted_data, config, ax_hodograph)
+    ax_map_button = fig.add_subplot(gs[9, 14])
+    
+    #display_hodograph_plot(extracted_data, config, ax_hodograph)
+    display_skewt_plot(extracted_data, config, params, fig, gs_skewt)
+    display_hodograph_plot(extracted_data, config, ax_hodograph)
 
     sounding_properties = windy_sounding.get('properties', 1)
     display_parameters(config, params, fig, sounding_properties)
+
+    display_map_button(ax_map_button)
+
 
     print(f'Execution time: {perf_counter() - start_time:.4f} seconds')
 

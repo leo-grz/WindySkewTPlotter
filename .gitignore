@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 *.log
+.vscode
 .env
 test1.py
 test2.py

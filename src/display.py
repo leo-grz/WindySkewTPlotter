@@ -2,13 +2,17 @@ from metpy.plots import SkewT
 from metpy.plots import Hodograph
 from metpy.units import units
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Button
 from matplotlib import gridspec
 from .data_processing import extract_relevant_wind_data
+from mpl_toolkits.basemap import Basemap
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 
 wind_data = None
 
 
-def create_skewt_plot(extracted_data, config, params, fig, gridspec):
+def display_skewt_plot(extracted_data, config, params, fig, gridspec):
 
     '''
     Creates a Skew-T plot using the provided pressure, temperature, dewpoint, 
@@ -95,10 +99,7 @@ def create_skewt_plot(extracted_data, config, params, fig, gridspec):
     skew.ax.set_title(skewt_config['title'])
     if skewt_config['legend']: skew.ax.legend()
 
-
-
-
-def create_hodograph_plot(extracted_data, config, ax):
+def display_hodograph_plot(extracted_data, config, ax):
 
     '''
     Creates a Hodograph plot using the provided geopotential height, wind components,
@@ -120,9 +121,6 @@ def create_hodograph_plot(extracted_data, config, ax):
     - Adds a grid to the hodograph plot based on the configured grid increment.
     - Reduces amount of displayed datapoints to the measurements at pressure levels derived from config.
     '''
-
-    # hodograph becomes messy if too many measurements are drawn
-
     wind_data = extract_relevant_wind_data(extracted_data, config)
     pres, wind_u, wind_v = [wind_data.get(key, 1) for key in ['pressure', 'wind_u', 'wind_v']]
     hodograph_config = config['hodograph']
@@ -273,3 +271,30 @@ def plot_extracted_data(extracted_data, config):
     add_subplot(gs[2, 1], 'wind_v')
 
     # plt.show()
+
+def plot_location_on_map(lon, lat):
+    print('PLOT LOCATION CALLED')
+    """Display a world map focused on the specified location."""
+    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw={'projection': ccrs.PlateCarree()})
+    
+    ax.set_extent([-180, 180, -90, 90])  # World map extent
+    ax.add_feature(cfeature.LAND, facecolor='lightgray')
+    ax.add_feature(cfeature.OCEAN, facecolor='lightblue')
+    ax.add_feature(cfeature.LAKES, facecolor='lightblue')
+    ax.add_feature(cfeature.RIVERS, edgecolor='blue')
+    
+    # Plot the specific location
+    ax.plot(lon, lat, marker='o', color='red', markersize=10, transform=ccrs.PlateCarree())
+    ax.set_title(f"Location: ({lat}, {lon})")
+    ax.coastlines()
+    
+    plt.show()
+
+def on_button_click(event):
+    print('CLICKED')
+    plot_location_on_map(-73.935242, 40.730610)  # Example: New York City
+
+def display_map_button(ax):
+        
+    button = Button(ax, 'Show Map')
+    button.on_clicked(on_button_click)

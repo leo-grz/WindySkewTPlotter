@@ -20,15 +20,13 @@ This document tracks pending tasks, planned improvements, and bug fixes for the 
 ---
 
 ### 📝 Planned Features
+- [ ] **Add toggable forecast guidance for parameters** like which range is normal, how to interpret
 - [ ] **Calculation of additional weather parameters** like FRZ, MaxT ConvT, additional Hodograph vectors
-- [ ] **Implement Metadata readout** of sounding files
+- [ ] **Add location of sounding** in map form
 - [ ] **Implement config validation** to prevent incorrect settings.
 - [ ] **Implement tests** to for data and calculation completeness.
 - [ ] **Add mouse interaction** like malr, dalr, mixing ratio (basically live lcl)
 - [ ] **Add GUI interface** (either configure buttons in fig or separately)
-- [ ] **Add location of sounding** in map form
-- [ ] **Report outliers in data** during data validation
-- [ ] **Add toggable forecast guidance for parameters** like which range is normal, how to interpret
 - [ ] **Implement effective error handeling**
 - [ ] **Implement logging**
 - [ ] **Improvement of runtime possible?**
