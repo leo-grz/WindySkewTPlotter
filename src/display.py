@@ -2,14 +2,11 @@ from metpy.plots import SkewT
 from metpy.plots import Hodograph
 from metpy.units import units
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Button
 from matplotlib import gridspec
 from .data_processing import extract_relevant_wind_data
-from mpl_toolkits.basemap import Basemap
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-
-wind_data = None
+import webbrowser
 
 
 def display_skewt_plot(extracted_data, config, params, fig, gridspec):
@@ -260,7 +257,7 @@ def plot_extracted_data(extracted_data, config):
         ax.set_ylabel(f'{attrib} ({extracted_data[attrib].units})')
         ax.grid(True)
 
-    fig = plt.figure(figsize=(10, 8))
+    fig = plt.figure(figsize=(12, 8))
     gs = gridspec.GridSpec(3, 2, wspace=0.3, hspace=0.3)  # 3 rows, 2 columns
 
     add_subplot(gs[0, 0], 'pressure')
@@ -270,31 +267,6 @@ def plot_extracted_data(extracted_data, config):
     add_subplot(gs[2, 0], 'wind_u')
     add_subplot(gs[2, 1], 'wind_v')
 
-    # plt.show()
-
-def plot_location_on_map(lon, lat):
-    print('PLOT LOCATION CALLED')
-    """Display a world map focused on the specified location."""
-    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw={'projection': ccrs.PlateCarree()})
-    
-    ax.set_extent([-180, 180, -90, 90])  # World map extent
-    ax.add_feature(cfeature.LAND, facecolor='lightgray')
-    ax.add_feature(cfeature.OCEAN, facecolor='lightblue')
-    ax.add_feature(cfeature.LAKES, facecolor='lightblue')
-    ax.add_feature(cfeature.RIVERS, edgecolor='blue')
-    
-    # Plot the specific location
-    ax.plot(lon, lat, marker='o', color='red', markersize=10, transform=ccrs.PlateCarree())
-    ax.set_title(f"Location: ({lat}, {lon})")
-    ax.coastlines()
-    
-    plt.show()
-
-def on_button_click(event):
-    print('CLICKED')
-    plot_location_on_map(-73.935242, 40.730610)  # Example: New York City
-
-def display_map_button(ax):
-        
-    button = Button(ax, 'Show Map')
-    button.on_clicked(on_button_click)
+def open_google_maps(lat, lon):
+    google_maps_url = f'https://www.google.com/maps?q={lat},{lon}'
+    webbrowser.open(google_maps_url)
