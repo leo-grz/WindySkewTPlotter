@@ -32,10 +32,9 @@ def extract_data(data, fields, min_points=5):
     
     Paramters
     ---------
-    data: dict : The JSON data to extract from.
+    data: dict : The JSON formatted sounding data to extract from.
     fields: list : List of fields to extract (e.g., ['pressure', 'temp', 'dewpoint']).
     min_points: int : Minimum number of points required for the data to be valid.
-    pressure_filter: tuple : Range of acceptable pressure values (used for filtering pressure field).
     
     Returns
     -------
@@ -69,6 +68,19 @@ def extract_data(data, fields, min_points=5):
     return extracted_data
 
 def clean_extracted_data(extracted_data, config):
+
+    '''
+    Function to remove probe measurements (rows) with measurements that are outside of specified ranges (config.json)
+
+    Parameters
+    ----------
+    extracted_data :  dict(pint.Quantity) :  Dict with pint.Quantity values from sounding
+    config : dict : Configuration dictionary containing plot settings and functionalities.
+
+    Returns
+    -------
+    dict : cleaned extracted_data
+    '''
 
     default_ranges = config['default_ranges']
     indices_to_remove = {key: [] for key in extracted_data.keys()}
@@ -170,6 +182,20 @@ def calc_params(extracted_data):
     return params
 
 def extract_relevant_wind_data(extracted_data, config):
+    
+    '''
+    Function that filters out wind_u and wind_v samples from specific height levels specified in config.json,
+    e.g. 1000, 975, 950, 925, 900, 850, 800, 700, 600... hPa (pressure levels)
+
+    Parameters
+    ----------
+    extracted_data :  dict(pint.Quantity) :  Dict with pint.Quantity values from sounding
+    config : dict : Configuration dictionary containing plot settings and functionalities.
+
+    Returns
+    -------
+    dict : extracted_data with only keys being wind_u, wind_v and pressure
+    '''
 
     # load pressure, wind_u and win_v from extracted_data variable
     pres, wind_u, wind_v = [extracted_data.get(key, 1) for key in ['pressure', 'wind_u', 'wind_v']]
