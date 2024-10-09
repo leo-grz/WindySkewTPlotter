@@ -234,11 +234,26 @@ def display_parameters(config, params, fig, sounding_properties=None):
 
 
 def plot_extracted_data(extracted_data, config):
-    default_ranges = config['default_ranges']
 
     '''
-    documentation missing
+    Function to plot values of pressure, temperature, dewpoint, height, wind_u and wind_v to 
+    quickly gain an overview over plotted data, including possible outlier detection
+
+    Parameters
+    ----------
+    extracted_data :  dict(pint.Quantity) :  Dict with pint.Quantity values from sounding
+    config : dict : Configuration dictionary containing plot settings and functionalities.
+
+    Returns
+    -------
+    None
+
+    Functionalities
+    ---------------
+    - Displays each variables values and maximum and minimum possible ranges
     '''
+
+    default_ranges = config['default_ranges']
 
     for key, val in extracted_data.items():
         print(f'{key}: [{min(val).m}, {max(val).m}], LENGTH: {len(val)} | should be in range: {default_ranges[key]}')
@@ -268,5 +283,19 @@ def plot_extracted_data(extracted_data, config):
     add_subplot(gs[2, 1], 'wind_v')
 
 def open_google_maps(lat, lon):
+
+    '''
+    Function to open google maps at sounding's location
+
+    Parameters
+    ----------
+    lat :  float :  latitude of sounding
+    lon : float : longitude of sounding
+
+    Returns
+    -------
+    None
+    '''
+
     google_maps_url = f'https://www.google.com/maps?q={lat},{lon}'
     webbrowser.open(google_maps_url)
